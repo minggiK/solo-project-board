@@ -52,4 +52,12 @@ public class BoardController {
 
     }
 
+
+    @DeleteMapping("/{board-id}")
+    public ResponseEntity deleteBoard(@PathVariable("board-id") long boardId, Authentication authentication){
+
+        boardService.deleteBoard(boardId, authentication);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 }

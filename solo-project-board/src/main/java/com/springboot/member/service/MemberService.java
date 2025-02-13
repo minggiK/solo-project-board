@@ -97,7 +97,7 @@ public class MemberService {
         memberRepository.save(member);
 
         //memberStatus가 탈퇴 상태 -> board의 상태도 비활성화로 변경되어야 한다.
-        if(member.getMemberStatus() == Member.MemberStatus.MEMBER_QUIT) {
+        if(member.getMemberStatus().equals(Member.MemberStatus.MEMBER_QUIT)) {
             //List로 들고있으니 스트림 돌아서 하나씩 매핑
             member.getBoards().stream()
                     .forEach(board -> board.setBoardStatus(Board.BoardStatus.QUESTION_DEACTIVED));

@@ -8,6 +8,7 @@ import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,19 +62,18 @@ public class BoardService {
         return board;
     }
 
-    public void deleteBoard (long boardId) {
+
+    public void deleteBoard (long boardId, Authentication authentication) {
         //등록되어있는 게시글인지 확인
         Board findBoard = findVerifiedBoard(boardId);
-
         //요구사항 1. 1건의 질문은 작성한 회원만 삭제할 수 있다.
-        //요구사항 2. 1건의 질문 삭제는 질문을 등록한 회원만 가능하다
-        //요구사항 3. 질문 삭제 시, 질문의 상태만 변경되어야 한다.
-
-
+        findRegisteredMember(boardId, authentication);
         //요구사항 4. 이미 삭제된 질문은 삭제할 수 없다.
         boardStatusDelete(findBoard);
+        //요구사항 3. 질문 삭제 시, 질문의 상태만 변경되어야 한다.
+        findBoard.setBoardStatus(Board.BoardStatus.QUESTION_DELETE);
 
-
+        boardRepository.save(findBoard);
     }
 
     //검증 로직: board가 이미 있다면 등록되어있는 board를 return, 없다면 예외처리
@@ -91,7 +91,7 @@ public class BoardService {
         //글을 등록한 회원의 정보를 담은 Member를 생성
         Member member = (Member) authentication.getPrincipal();
         //Board가 비공개 상태라면, 등록한 회원과 관리자만 조회가 가능하다.
-        if (findBoard.getPublicStatus().equals(Board.BoardPublicStatus.QUESTION_SECRET)) {
+        if (findBoard.getPublicStatus().equals(Board.BoardPublicStatus.SECRET)) {
             //가져온 memberId와 board가 가지고 있는 memberId가 다르면 접근할 수 없다고 예외 날림
             if (!member.getMemberId().equals(findBoard.getMember().getMemberId())) {
                 throw new BusinessLogicException(ExceptionCode.BOARD_UNAUTHORIZED);
@@ -107,7 +107,7 @@ public class BoardService {
         }
     }
 
-//    검증 로직: 답글이 작성되었다면 함께 조회, 작성되지 않았다면 질문만 조회
+    //검증 로직: 답글이 작성되었다면 함께 조회, 작성되지 않았다면 질문만 조회
     public Board commentExistsBoard(long boardId) {
        return boardRepository.findById(boardId).orElseThrow(
                () -> new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND)
@@ -132,6 +132,17 @@ public class BoardService {
         return memberService.findMemberId(email);
     }
 
-//    public
+    //작성한 회원만 접근가능
+    public void findRegisteredMember(long boardId, Authentication authentication){
+        Board findBoard = findVerifiedBoard(boardId);
+        memberService.findVerifiedMember(memberService.findMemberId(authentication.getPrincipal().toString()));
+
+
+
+
+//        if(!findBoard.getMember().getMemberId().equals(member.getMemberId())) {
+//            throw new BusinessLogicException(ExceptionCode.BOARD_UNAUTHORIZED);
+//        }
+    }
 
 }
