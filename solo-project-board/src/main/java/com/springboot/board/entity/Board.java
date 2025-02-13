@@ -69,6 +69,11 @@ public class Board extends Auditable {
         }
     }
 
+    //Board 상태 변경 setter
+    public void setBoardStatus(BoardStatus boardStatus) {
+        this.boardStatus = boardStatus;
+    }
+
     //Board의 공개여부
     public enum BoardPublicStatus {
         QUESTION_PUBLIC("공개"),

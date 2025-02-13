@@ -9,3 +9,31 @@ spring:
     hibernate:
       ddl-auto: create  # (1) 스키마 자동 생성
     show-sql: true      # (2) SQL 쿼리 출력
+    properties:
+      hibernate:
+        format_sql: true  # (3) SQL pretty print
+  sql:
+    init:
+      data-locations: classpath*:db/h2/data.sql
+logging:
+  level:
+    org:
+      springframework:
+        orm:
+          jpa: DEBUG
+server:
+  servlet:
+    encoding:
+      force-response: true
+mail:
+  address:
+    admin: admin@gmail.com
+    #JwtTokenizer
+    #JWT 서명에 사용되는 Secret Key 정보는 민감한 정보 -> 환경변수의 변수등록 필요 (설정 후 인텔리제이 껐다 켜야해)
+jwt:
+  key: ${JWT_SECRET_KEY} # -> OS 시스템 환경변수의 값을 읽어오는 표현식
+  access-token-expiration-minutes: 10 #Access Token 만료시간 10분 설정
+  refresh-token-expiration-minutes: 420  #Refresh Token 만료시간 420분 설정
+
+    # 일반적으로 보안상 Access Token의 만료 시간이 Refresh Token의 만료 시간보다 짧은 것이 권장되며,
+  # 보안 강화를 이유로 Refresh Token을 제공하지 않는 애플리케이션도 있다

@@ -1,6 +1,7 @@
 package com.springboot.auth;
 
 import com.springboot.auth.utils.CustomAuthorityUtils;
+import com.springboot.board.entity.Board;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.member.entity.Member;
@@ -26,8 +27,8 @@ public class MemberDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Member> optionalMember = memberRepository.findByEmail(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<Member> optionalMember = memberRepository.findByEmail(email);
         Member findMember = optionalMember.orElseThrow(() ->
                 new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
 
@@ -42,7 +43,12 @@ public class MemberDetailsService implements UserDetailsService {
             setMemberId(member.getMemberId());
             setEmail(member.getEmail());
             setPassword(member.getPassword());
+            setUsername(member.getUsername());
+            setPhone(member.getPhone());
+            setMemberStatus(member.getMemberStatus());
             setRoles(member.getRoles());
+            setBoards(member.getBoards());
+            setComments(member.getComments());
         }
 
         //User 권한 정보 생성
