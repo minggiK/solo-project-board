@@ -115,6 +115,14 @@ public class MemberService {
         }
 
     }
+
+    public Long findMemberId(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(
+                ()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+
+        return member.getMemberId();
+
+    }
     //검증 로직: 회원이 존재하는지 확인, 존재한다면 그 회원을 DB에서 꺼내와야해
     public Member findVerifiedMember(long memberId) {
         //Repository에서 찾기 -> Optional
@@ -130,7 +138,7 @@ public class MemberService {
         //멤버가 존재하는지 확인, 없으면 member를 찾을 수 없다고 예외를 던짐
         Member member = findVerifiedMember(memberId);
         //member가 탈퇴상태면 글을 작성할 수없다고 예외 던져
-        if(member.getMemberStatus() != Member.MemberStatus.MEMBER_ACTIVE) {
+        if(!member.getMemberStatus().equals(Member.MemberStatus.MEMBER_ACTIVE)) {
             throw new BusinessLogicException(ExceptionCode.MEMBER_FORBIDDEN);
         }
     }

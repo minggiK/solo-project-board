@@ -21,7 +21,7 @@ public class Comment extends Auditable {
 
     //한 게시물(질문)에 한가지 답변만 등록 가능
     @Column(nullable = false)
-    private String text;
+    private String content;
 
     //member 중 관리자 권한이 있는 자만 작성 가능
     //관리자는 1개의 게시글에 1개의 답변을 달아줄 수 있다

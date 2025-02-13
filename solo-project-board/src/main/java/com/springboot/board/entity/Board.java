@@ -6,12 +6,14 @@ import com.springboot.comment.entity.Comment;
 import com.springboot.member.entity.Member;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@Setter
 public class Board extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +23,7 @@ public class Board extends Auditable {
     private String title;
 
     @Column(nullable = false)
-    private String text;
+    private String content;
 
     //게시글 상태
     @Enumerated(value = EnumType.STRING)
@@ -31,7 +33,7 @@ public class Board extends Auditable {
     //게시글 공개여부
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
-    private BoardPublicStatus publicStatus = BoardPublicStatus.QUESTION_PUBLIC;
+    private BoardPublicStatus publicStatus;
 
     //외래키 : member는 여러 Board(질문)을 가질 수 있다.
     @ManyToOne
@@ -41,7 +43,7 @@ public class Board extends Auditable {
     //comment(답글) 과 1대1관계
     @OneToOne
     @JoinColumn(name = "comment_id")
-    private Comment comment;
+    private Comment comment = null; //get 할 때, 초기화가 안되어있어서 ClassCastException 발생
 
 
     //영속성 전이
