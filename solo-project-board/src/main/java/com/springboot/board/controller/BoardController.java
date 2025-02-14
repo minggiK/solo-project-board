@@ -68,15 +68,9 @@ public class BoardController {
 
     @GetMapping
     public  ResponseEntity getBoards(@Positive @RequestParam("page") int page,
-                                     @Positive @RequestParam("size") int size,
-                                     Sort sort) {
-        //요구사항 1. 일반 회원, 관리자 모두 조회 가능 -> 비밀글의 경우 목록에서 제외시키지말고 비밀글임을 알려줘야한다.
-        //요구사항 2. 삭제 상태가 아닌 질문만 조회 가능
-        //요구사항 3. 답변이 존재한다면 각 질문에 대한 답변도 함꼐 조회
-        //요구사항 4. 페이지네이션 처리가 되어 일정 건수 만큼 데이터만 조회할 수 있다,
-        //조회 조건 정렬 : 최신글 순 / 오래된 글 순 / 좋아요 많은 순, 적은 순 / 조회수 많은 순, 적은 순
-        //Page 객체가 갖는 3가지
-        Page<Board> boardPage = boardService.findBoards(page-1, size, sort.descending());
+                                     @Positive @RequestParam("size") int size) {
+
+        Page<Board> boardPage = boardService.findBoards(page-1, size);
         List<Board> boards = boardPage.getContent();
 
         return  new ResponseEntity<>(
