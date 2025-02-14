@@ -133,6 +133,15 @@ public class MemberService {
                 () -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
     }
 
+    //검증 로직: 회원이 존재하는지 확인, 존재한다면 그 회원을 DB에서 꺼내와야해
+    public Member findVerifiedMember(String email) {
+        //Repository에서 찾기 -> Optional
+        //findMember에 DB에서 찾은 member를 담음
+        Optional<Member> findMember = memberRepository.findByEmail(email);
+        //findMember가 비어있으면 예외처리 -> orElseThrow 해서 true면 Optional이 벗겨지고 객체가됨
+        return findMember.orElseThrow(
+                () -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
     //검증로직 : 회원이 존재하는지, 글을 작성할 수 있는 상태인지 확인
     public void checkMemberStatus(long memberId) {
         //멤버가 존재하는지 확인, 없으면 member를 찾을 수 없다고 예외를 던짐

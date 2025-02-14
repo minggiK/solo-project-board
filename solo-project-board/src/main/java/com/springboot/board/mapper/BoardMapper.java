@@ -15,8 +15,9 @@ public interface BoardMapper {
     //target, source로 서로 지정해줌
     @Mapping(target = "member.memberId", source = "memberId")
     Board boardPostToBoard(BoardDto.Post postDto);
-
     Board boardPatchToBoard(BoardDto.Patch patchDto);
     BoardDto.Response boardToBoardResponseDto(Board board);
     List<BoardDto.Response> boardsToBoardsResponseDto(List<Board> boards);
+
 }
+

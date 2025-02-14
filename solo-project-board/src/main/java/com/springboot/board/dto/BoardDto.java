@@ -26,11 +26,13 @@ public class BoardDto {
         @NotBlank(message = "본문을 작성해 주세요.")
         private String content;
 
+        //RequestBody 로 받아서 보냄
         private Board.BoardPublicStatus publicStatus;
 
     }
 
     @Getter
+    @Setter
     @AllArgsConstructor
     public static class Patch {
 
@@ -42,6 +44,7 @@ public class BoardDto {
         @NotBlank(message = "본문을 작성해 주세요.")
         private String content;
 
+        //RequestBody 로 받아서 보냄
         private Board.BoardPublicStatus publicStatus;
 
     }

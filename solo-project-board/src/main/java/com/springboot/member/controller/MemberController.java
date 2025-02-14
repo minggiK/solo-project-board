@@ -66,7 +66,7 @@ public class MemberController {
     @GetMapping
     public ResponseEntity getMembers(@Positive @RequestParam("page") int page,
                                      @Positive @RequestParam("size") int size) {
-        Page<Member> members = memberService.findMembers(page, size);
+        Page<Member> members = memberService.findMembers(page-1 , size);
 //      mapper 에서 Entity -> ResponseDto 로 변경해야해서 List로 받음
         //getContent() 가 List로 반환
         List<Member> memberList = members.getContent();

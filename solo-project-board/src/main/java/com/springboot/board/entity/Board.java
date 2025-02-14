@@ -1,6 +1,7 @@
 package com.springboot.board.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.springboot.audit.Auditable;
 import com.springboot.comment.entity.Comment;
 import com.springboot.member.entity.Member;
@@ -37,6 +38,7 @@ public class Board extends Auditable {
 
     //외래키 : member는 여러 Board(질문)을 가질 수 있다.
     @ManyToOne
+//    @JsonBackReference
     @JoinColumn(name = "member_id")
     private Member member;
 
@@ -78,8 +80,8 @@ public class Board extends Auditable {
 
     //Board의 공개여부
     public enum BoardPublicStatus {
-        QUESTION_PUBLIC("공개"),
-        QUESTION_SECRET("비공개");
+        PUBLIC("공개"),
+        SECRET("비공개");
 
         @Getter
         private String message;
