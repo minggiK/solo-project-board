@@ -32,7 +32,9 @@ public class CommentService {
         //comment를 등록할 Board를 꺼내서 findBoard에 할당
         Board findBoard = boardService.findVerifiedBoard(boardId);
         //요구사항 1. 관리자만 등록할 수 있다. -> SecurityConfiguration 작성
+        Member findMember = memberService.findVerifiedMember(authentication.getPrincipal().toString());
         //요구사항 2. 답변은 관리자가 한건만 등록할 수 있다.
+        memberService.roleAdmin(findMember);
         //-> 생성 후 Board 상태 Answer로 변경 -> 이 상태일 때는 추가적으로 작성 못하게 설정!
             // + Delete, Deactived 일때도 작성 X
         cannotLeaveComment(findBoard, comment);
@@ -50,7 +52,7 @@ public class CommentService {
         memberService.roleAdmin(findMember);
 
         Optional.ofNullable(comment.getText())
-                .ifPresent(content -> findBoard.setContent(content));
+                .ifPresent(content -> findBoard.getComment().setText(content));
 
 
         return commentRepository.save(comment);

@@ -17,7 +17,7 @@ public class CommentDto {
     public static class Post {
         //답변 내용은 필수 입력사항이다.
         @NotBlank(message = "글을 작성해 주세요.")
-        private String content;
+        private String text;
 
         private Long memberId;
     }
@@ -30,7 +30,7 @@ public class CommentDto {
         private Long commentId;
 
         @NotBlank(message = "글을 작성해 주세요.")
-        private String content;
+        private String text;
     }
 
     @Getter
@@ -39,6 +39,6 @@ public class CommentDto {
     public static class Response {
 
         private Long commentId;
-        private String content;
+        private String text;
     }
 }

@@ -45,7 +45,8 @@ public class Board extends Auditable {
     //comment(답글) 과 1대1관계
     @OneToOne
     @JoinColumn(name = "comment_id")
-    private Comment comment = null; //get 할 때, 초기화가 안되어있어서 ClassCastException 발생
+    private Comment comment;
+//            = null; //get 할 때, 초기화가 안되어있어서 ClassCastException 발생
 
 
     //영속성 전이
