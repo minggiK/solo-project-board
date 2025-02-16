@@ -4,11 +4,13 @@ import com.springboot.audit.Auditable;
 import com.springboot.member.entity.Member;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 public class Comment extends Auditable {
     @Id
@@ -21,7 +23,7 @@ public class Comment extends Auditable {
 
     //한 게시물(질문)에 한가지 답변만 등록 가능
     @Column(nullable = false)
-    private String content;
+    private String text;
 
     //member 중 관리자 권한이 있는 자만 작성 가능
     //관리자는 1개의 게시글에 1개의 답변을 달아줄 수 있다

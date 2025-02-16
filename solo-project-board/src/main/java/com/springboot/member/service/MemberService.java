@@ -2,6 +2,7 @@ package com.springboot.member.service;
 
 import com.springboot.auth.utils.CustomAuthorityUtils;
 import com.springboot.board.entity.Board;
+import com.springboot.comment.entity.Comment;
 import com.springboot.event.MemberRegistrationApplicationEvent;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
@@ -11,6 +12,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -150,5 +152,12 @@ public class MemberService {
         if(!member.getMemberStatus().equals(Member.MemberStatus.MEMBER_ACTIVE)) {
             throw new BusinessLogicException(ExceptionCode.MEMBER_FORBIDDEN);
         }
+    }
+
+    //검증 로직 : 관리자만 수정 가능 -> 관리자인지 확인
+    public void roleAdmin(Member member) {
+       if(!member.getRoles().contains("ADMIN")) {
+           throw new BusinessLogicException(ExceptionCode.MEMBER_FORBIDDEN);
+       }
     }
 }
