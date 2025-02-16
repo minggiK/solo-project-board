@@ -183,7 +183,6 @@ public class BoardService {
 
     }
 
-
     //답변이 완료된 게시글(질문)은 수정이 안된다.
     public void cannotChangeBoard(Board board) {
         Board findBoard = findVerifiedBoard(board.getBoardId());

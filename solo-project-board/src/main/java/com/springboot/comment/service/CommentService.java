@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.rmi.server.ExportException;
 import java.util.Optional;
 
 @Service
@@ -58,6 +59,19 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
+    @Transactional
+    public void deleteComment(long boardId, Authentication authentication){
+        Member findMember = memberService.findVerifiedMember(authentication.getPrincipal().toString());
+        //Admin 만 삭제 가능
+        memberService.roleAdmin(findMember);
+        //등록된 Board 찾아서 Board의 Comment 상태 변경
+        Board findBoard = boardService.findVerifiedBoard(boardId);
+        commentStatusDelete(findBoard);
+        
+        Comment comment = findBoard.getComment();
+
+        commentRepository.save(comment);
+    }
 
     //검증 로직: BoardStatus가 Registered 외의 상태 (Delete,Answer,Deactived) 일때는 Comment를 달 수 없다.
     public Board cannotLeaveComment(Board board, Comment comment) {
@@ -76,6 +90,18 @@ public class CommentService {
     }
 
 
-
+    //delete 삭제변화
+    public Board commentStatusDelete(Board board) {
+        //이미 삭제된 Comment 라면, 예외처리
+       if(board.getComment().getCommentStatus().equals(Comment.CommentStatus.COMMENT_DELETE)) {
+           throw new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND);
+       } else {
+           //Delete 상테가 아니라면, 상태변경하고,
+           board.getComment().setCommentStatus(Comment.CommentStatus.COMMENT_DELETE);
+           //Board 조회했을 때 Comment 내용이 보이면 안된다.
+           board.setComment(new Comment());
+       }
+        return board;
+    }
 
 }
