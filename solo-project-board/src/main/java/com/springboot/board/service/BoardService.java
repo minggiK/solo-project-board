@@ -9,12 +9,13 @@ import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -37,7 +38,6 @@ public class BoardService {
         return boardRepository.save(board);
 
     }
-
 
     public Board updateBoard(Board board, Authentication authentication) {
         //board(-> 수정사항이 담긴 데이터)와 동일한 id가 존재하는지 검증
@@ -81,10 +81,11 @@ public class BoardService {
         //요구사항 4. 삭제한 질문은 조회할 수 없다.
         boardStatusDelete(findBoard);
         //요구사항 3. 1건의 질문 조회 시, 해당 질문에 대한 답변이 존재한다면 답변도 함께 조회
-//        commentExistsBoard(board.getBoardId());
+        //좋아요 : Get 에서 좋아요 구현
+            //사용자가 직접 변경, 1질문에 한번만 가능
+
         return findBoard;
     }
-
 
     @Transactional(readOnly = true)
     public Page<Board> findBoards(int page, int size) {
@@ -92,12 +93,12 @@ public class BoardService {
 
         //요구사항 2. 삭제 상태가 아닌 질문만 조회 가능
 //        boardStatusDelete();
-        //요구사항 3. 답변이 존재한다면 각 질문에 대한 답변도 함꼐 조회
+        //요구사항 3. 답변이 존재한다면 각 질문에 대한 답변도 함꼐 조회 -> Board ResponseDto에 구현함
         //요구사항 4. 페이지네이션 처리가 되어 일정 건수 만큼 데이터만 조회할 수 있다,
         //조회 조건 정렬 : 최신글 순 / 오래된 글 순 / 좋아요 많은 순, 적은 순 / 조회수 많은 순, 적은 순
 
         return boardRepository.findAll(PageRequest.of(
-                page, size, org.springframework.data.domain.Sort.by("boardId").descending()));
+                page, size));
     }
 
 
@@ -146,26 +147,6 @@ public class BoardService {
         }
     }
 
-    //검증 로직: 답글이 작성되었다면 함께 조회, 작성되지 않았다면 질문만 조회
-    public Board commentExistsBoard(long boardId) {
-        return boardRepository.findById(boardId).orElseThrow(
-                () -> new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND)
-        );
-
-        //해당 Board를 찾아서 새 객체에 담아줌
-//        Board board = new Board();
-//        board.setTitle(findBoard.getTitle());
-//        board.setContent(findBoard.getContent());
-//        board.setMember(findBoard.getMember());
-//        //게시판에서 comment 가 있다면,
-//        if(findBoard.getComment() != null) {
-//            board.setComment(findBoard.getComment());
-//
-//        } else {
-//            board.setComment(new Comment());
-//        }
-//        return board;
-    }
 
     public Long findMemberId(String email) {
         return memberService.findMemberId(email);
@@ -191,6 +172,28 @@ public class BoardService {
             throw new BusinessLogicException(ExceptionCode.CANNOT_CHANGE_BOARD);
         }
     }
+//
+//    //전체 조회 :  BoardStatus = Secret 상태면 글이 보이지 않아야한다.
+//    public Board secretBoard(Board board) {
+//        Board boardSc = new Board();
+//        if(board.getPublicStatus().equals(Board.BoardPublicStatus.SECRET)) {
+//            boardSc.setBoardId(board.getBoardId());
+//            boardSc.setTitle("비밀 글 입니다.");
+//            return boardSc;
+//
+//        } else {
+//            return board;
+//        }
+//    }
+
+//    //List로 가지고 있는 Board의 상태를 매핑해서 다시 List로 매핌
+//    public List<Board> boardList(List<Board> boards) {
+//
+//        return boards.stream()
+//               .map(board -> secretBoard(board))
+//               .toList();
+//    }
+
 
 
 }
