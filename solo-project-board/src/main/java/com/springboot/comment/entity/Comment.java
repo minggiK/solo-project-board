@@ -23,12 +23,12 @@ public class Comment extends Auditable {
 
     //한 게시물(질문)에 한가지 답변만 등록 가능
     @Column(nullable = false)
-    private String text;
+    private String content;
 
-    //요구사항 XXXX
-    @Enumerated(value = EnumType.STRING)
-    @Column(nullable = false)
-    private CommentStatus commentStatus = CommentStatus.COMMENT_REGISTERED;
+//    //요구사항 XXXX
+//    @Enumerated(value = EnumType.STRING)
+//    @Column(nullable = false)
+//    private CommentStatus commentStatus = CommentStatus.COMMENT_REGISTERED;
 
     //member 중 관리자 권한이 있는 자만 작성 가능
     //관리자는 1개의 게시글에 1개의 답변을 달아줄 수 있다
@@ -48,16 +48,16 @@ public class Comment extends Auditable {
         }
     }
 
-    //요구사항 XXX ->  답변 삭제하면 상태만 변경
-    public enum CommentStatus {
-        COMMENT_REGISTERED("답변 등록"),
-        COMMENT_DELETE("답변 삭제");
-
-        @Getter
-        private String message;
-
-        CommentStatus(String message){
-            this.message = message;
-        }
-    }
+//    //요구사항 XXX ->  답변 삭제하면 상태만 변경
+//    public enum CommentStatus {
+//        COMMENT_REGISTERED("답변 등록"),
+//        COMMENT_DELETE("답변 삭제");
+//
+//        @Getter
+//        private String message;
+//
+//        CommentStatus(String message){
+//            this.message = message;
+//        }
+//    }
 }

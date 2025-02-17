@@ -42,10 +42,12 @@ public class Board extends Auditable {
     @JoinColumn(name = "member_id")
     private Member member;
 
+//(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     //comment(답글) 과 1대1관계
     @OneToOne
     @JoinColumn(name = "comment_id")
-    private Comment comment = null; //get 할 때, 초기화가 안되어있어서 ClassCastException 발생
+    private Comment comment;
+//    = null; //get 할 때, 초기화가 안되어있어서 ClassCastException 발생
 
 
     //영속성 전이
@@ -56,7 +58,11 @@ public class Board extends Auditable {
             member.setBoard(this);
         }
     }
-
+//
+//    public void setComment(Comment comment) {
+//        if()
+//
+//    }
 
     //Board(질문 글) 상태
     public enum BoardStatus {

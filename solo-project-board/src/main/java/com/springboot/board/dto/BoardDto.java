@@ -61,7 +61,7 @@ public class BoardDto {
         private String content;
         private Board.BoardStatus boardStatus;
         private Board.BoardPublicStatus publicStatus;
-        private String text;
+        private String comment;
         //조회수
         private int checkView;
         //좋아요 수

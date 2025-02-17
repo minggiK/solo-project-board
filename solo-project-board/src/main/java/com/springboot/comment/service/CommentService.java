@@ -12,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.rmi.server.ExportException;
 import java.util.Optional;
 
 @Service
@@ -32,6 +31,7 @@ public class CommentService {
 
         //comment를 등록할 Board를 꺼내서 findBoard에 할당
         Board findBoard = boardService.findVerifiedBoard(boardId);
+
         //요구사항 1. 관리자만 등록할 수 있다. -> SecurityConfiguration 작성
         Member findMember = memberService.findVerifiedMember(authentication.getPrincipal().toString());
         //요구사항 2. 답변은 관리자가 한건만 등록할 수 있다.
@@ -45,18 +45,24 @@ public class CommentService {
     }
 
     @Transactional
-    public Comment updateComment(Long bardId, Comment comment, Authentication authentication) {
+    //인자로 받은 comment는 Id가 null -> 변경될 content의 내용만 가지고 있다.
+    public Comment updateComment(Long boardId, Comment comment, Authentication authentication) {
+        //boardId로 해당 Board를 findBoard에 할당하고,
+        Board findBoard = boardService.findVerifiedBoard(boardId);
+        Comment findComment = findVerifiedComment(findBoard.getComment().getCommentId());
         //등록된 답변은 관리자만 수정할 수 있어야한다.
-        Board findBoard = boardService.findVerifiedBoard(bardId);
-        //회원정보가 관리자일때
         Member findMember = memberService.findVerifiedMember(authentication.getPrincipal().toString());
         memberService.roleAdmin(findMember);
 
-        Optional.ofNullable(comment.getText())
-                .ifPresent(content -> findBoard.getComment().setText(content));
+//        findComment.setMember(findMember);
 
+        Optional.ofNullable(comment.getContent())
+                .ifPresent(content -> findComment.setContent(content));
 
-        return commentRepository.save(comment);
+        Comment saveComment = commentRepository.save(findComment);
+        findBoard.setComment(findComment);
+
+        return saveComment;
     }
 
     @Transactional
@@ -66,16 +72,32 @@ public class CommentService {
         memberService.roleAdmin(findMember);
         //등록된 Board 찾아서 Board의 Comment 상태 변경
         Board findBoard = boardService.findVerifiedBoard(boardId);
-        commentStatusDelete(findBoard);
-        
-        Comment comment = findBoard.getComment();
+//       요구사항XXX comment 상태 변경
+//        commentStatusDelete(findBoard);
 
-        commentRepository.save(comment);
+        Comment comment = findVerifiedComment(findBoard.getComment().getCommentId());
+
+        //Board <-> Comment 1대1 단뱡향 관계
+        //Board가 commentId(FK)를 참조하고 있기 때문에 강제로 끊어줘야한다.
+        findBoard.setComment(null);
+        //답글이 삭제되면 Board의 상태도 답변등록이 가능한 상태로 변경
+        findBoard.setBoardStatus(Board.BoardStatus.QUESTION_REGISTERED);
+
+        //DB에서 삭제
+        commentRepository.delete(comment);
+    }
+
+    //검증로직 : CommentId로 등록된 comment 찾기
+    public Comment findVerifiedComment(Long commentId) {
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        return optionalComment.orElseThrow(
+                ()-> new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND));
+
     }
 
     //검증 로직: BoardStatus가 Registered 외의 상태 (Delete,Answer,Deactived) 일때는 Comment를 달 수 없다.
     public Board cannotLeaveComment(Board board, Comment comment) {
-       //BoardStatus가 REGISTERED 일때만 comment 추가
+        //BoardStatus가 REGISTERED 일때만 comment 추가
         if(board.getBoardStatus().equals(Board.BoardStatus.QUESTION_REGISTERED)){
             board.setComment(comment);
             //Board의 상태 변화 : comment가 1개 달리면 상태는 Answer로 변경해야함
@@ -90,18 +112,18 @@ public class CommentService {
     }
 
 
-    //delete 삭제변화
-    public Board commentStatusDelete(Board board) {
-        //이미 삭제된 Comment 라면, 예외처리
-       if(board.getComment().getCommentStatus().equals(Comment.CommentStatus.COMMENT_DELETE)) {
-           throw new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND);
-       } else {
-           //Delete 상테가 아니라면, 상태변경하고,
-           board.getComment().setCommentStatus(Comment.CommentStatus.COMMENT_DELETE);
-           //Board 조회했을 때 Comment 내용이 보이면 안된다.
-           board.setComment(new Comment());
-       }
-        return board;
-    }
+//    //요구사항 XXX -> delete 삭제 시 상태 변화
+//    public Board commentStatusDelete(Board board) {
+//        //이미 삭제된 Comment 라면, 예외처리
+//       if(board.getComment().getCommentStatus().equals(Comment.CommentStatus.COMMENT_DELETE)) {
+//           throw new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND);
+//       } else {
+//           //Delete 상테가 아니라면, 상태변경하고,
+//           board.getComment().setCommentStatus(Comment.CommentStatus.COMMENT_DELETE);
+//           //Board 조회했을 때 Comment 내용이 보이면 안된다.
+//           board.setComment(new Comment());
+//       }
+//        return board;
+//    }
 
 }

@@ -16,7 +16,7 @@ public interface BoardMapper {
     @Mapping(target = "member.memberId", source = "memberId")
     Board boardPostToBoard(BoardDto.Post postDto);
     Board boardPatchToBoard(BoardDto.Patch patchDto);
-    @Mapping(target = "text", source = "comment.text")
+    @Mapping(target = "comment", source = "comment.content")
     BoardDto.Response boardToBoardResponseDto(Board board);
     List<BoardDto.Response> boardsToBoardsResponseDto(List<Board> boards);
 

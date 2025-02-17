@@ -11,6 +11,7 @@ public enum ExceptionCode {
     CANNOT_CHANGE_BOARD(403, "Board can not change"),
     CONNOT_LEAVE_COMMENT(409, "Can not leave a comment"),
     COMMENT_NOT_FOUND(404, "Comment not found"),
+    CANNOT_CHANGE_COMMENT(403, "Comment can not change"),
     COFFEE_NOT_FOUND(404, "Coffee not found"),
     COFFEE_CODE_EXISTS(409, "Coffee Code exists"),
     ORDER_NOT_FOUND(404, "Order not found"),
