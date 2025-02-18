@@ -4,12 +4,16 @@ package com.springboot.board.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.springboot.audit.Auditable;
 import com.springboot.comment.entity.Comment;
+import com.springboot.like.Like;
 import com.springboot.member.entity.Member;
+import com.springboot.view.View;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -49,6 +53,14 @@ public class Board extends Auditable {
     private Comment comment;
 //    = null; //get 할 때, 초기화가 안되어있어서 ClassCastException 발생
 
+    @OneToMany(mappedBy = "board", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<View> views = new ArrayList<>();
+
+    @Column(nullable = false)
+    private int viewCount;
+
+    @Column(nullable = false)
+    private boolean isNew;
 
     //영속성 전이
     //member가 가지지고있는 Board(this)가 아니라면, 추가(setBoards)
@@ -58,11 +70,7 @@ public class Board extends Auditable {
             member.setBoard(this);
         }
     }
-//
-//    public void setComment(Comment comment) {
-//        if()
-//
-//    }
+
 
     //Board(질문 글) 상태
     public enum BoardStatus {
@@ -96,4 +104,6 @@ public class Board extends Auditable {
             this.message = message;
         }
     }
+
+
 }

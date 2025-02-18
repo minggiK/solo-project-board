@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 
 public class BoardDto {
@@ -63,7 +64,7 @@ public class BoardDto {
         private Board.BoardPublicStatus publicStatus;
         private String comment;
         //조회수
-        private int checkView;
+        private int viewCount;
         //좋아요 수
         private int likeCount;
     }
