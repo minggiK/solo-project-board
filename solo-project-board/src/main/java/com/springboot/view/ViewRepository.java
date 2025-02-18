@@ -1,4 +1,7 @@
 package com.springboot.view;
 
-public interface ViewRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ViewRepository extends JpaRepository<View, Long> {
+
 }
