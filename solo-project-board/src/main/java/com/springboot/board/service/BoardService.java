@@ -5,14 +5,19 @@ import com.springboot.board.repository.BoardRepository;
 import com.springboot.comment.repository.CommentRepository;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.like.Like;
 import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
+import com.springboot.view.View;
+import com.springboot.view.ViewRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,11 +26,13 @@ import java.util.stream.Collectors;
 @Service
 public class BoardService {
     private final BoardRepository boardRepository;
+    private final ViewRepository viewRepository;
     private final MemberService memberService;
 
 
-    public BoardService(BoardRepository boardRepository, MemberService memberService, CommentRepository commentRepository) {
+    public BoardService(BoardRepository boardRepository, ViewRepository viewRepository, MemberService memberService, CommentRepository commentRepository) {
         this.boardRepository = boardRepository;
+        this.viewRepository = viewRepository;
         this.memberService = memberService;
     }
 
@@ -34,6 +41,12 @@ public class BoardService {
         //글을 작성할 수 있는 member가 맞는지 확인
         //->오류 발생 :Dto, mapper에 추가 지정
         memberService.checkMemberStatus(board.getMember().getMemberId());
+        //board 생성 시, view도 생성 -> board에 할당
+        board.setViewCount(0);
+
+        //board 생성 시, like도 생성
+//        Like like = new Like();
+//        board.setLike(like);
         //글이 등록되면 board를 repsitory에 save
         return boardRepository.save(board);
 
@@ -57,7 +70,7 @@ public class BoardService {
                 memberService.findVerifiedMember(authentication.getPrincipal().toString());
 
         //글을 작성한 회원이 맞다면 수정 가능
-        if(member.getMemberId().equals(findBoard.getMember().getMemberId())) {
+        if (member.getMemberId().equals(findBoard.getMember().getMemberId())) {
             //변경될 값이 null이 아니라면,
             Optional.ofNullable(board.getTitle())
                     //기존 DB에 있던 데이터에 변경
@@ -72,19 +85,26 @@ public class BoardService {
         return boardRepository.save(findBoard);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     //요구사항 1. 1건의 특정 질문은 회원과 관리자 모두 조회가능
     public Board findBoard(Long boardId, Authentication authentication) {
-        //요구사항 2. 비밀글 상태의 경우, 등록한 회원과 관리자만 조회가능
+        //등록된 Board가 있다면 꺼내서 optionalBoard에 할당
         Board findBoard = findVerifiedBoard(boardId);
+        //요구사항 2. 비밀글 상태의 경우, 등록한 회원과 관리자만 조회가능
         boardSecretStatus(findBoard, authentication);
         //요구사항 4. 삭제한 질문은 조회할 수 없다.
         boardStatusDelete(findBoard);
-        //요구사항 3. 1건의 질문 조회 시, 해당 질문에 대한 답변이 존재한다면 답변도 함께 조회
-        //좋아요 : Get 에서 좋아요 구현
-            //사용자가 직접 변경, 1질문에 한번만 가능
 
-        return findBoard;
+        //조회수 : Board 조회 때마다, 조회수 1건 증가
+        increaseViewCount(findBoard, authentication);
+        //요구사항 3. 1건의 질문 조회 시, 해당 질문에 대한 답변이 존재한다면 답변도 함께 조회
+        int currentViewCount = findBoard.getViewCount();
+        findBoard.setViewCount(currentViewCount + 1);
+
+//        Board savedBoard = boardRepository.save(findBoard);
+        //좋아요 : Get 에서 좋아요 구현
+        //사용자가 직접 변경, 1질문에 한번만 가능
+        return boardRepository.save(findBoard);
     }
 
     @Transactional(readOnly = true)
@@ -96,6 +116,7 @@ public class BoardService {
         //요구사항 3. 답변이 존재한다면 각 질문에 대한 답변도 함꼐 조회 -> Board ResponseDto에 구현함
         //요구사항 4. 페이지네이션 처리가 되어 일정 건수 만큼 데이터만 조회할 수 있다,
         //조회 조건 정렬 : 최신글 순 / 오래된 글 순 / 좋아요 많은 순, 적은 순 / 조회수 많은 순, 적은 순
+
 
         return boardRepository.findAll(PageRequest.of(
                 page, size));
@@ -168,7 +189,7 @@ public class BoardService {
     public void cannotChangeBoard(Board board) {
         Board findBoard = findVerifiedBoard(board.getBoardId());
 
-        if(findBoard.getBoardStatus().equals(Board.BoardStatus.QUESTION_ANSWERED)) {
+        if (findBoard.getBoardStatus().equals(Board.BoardStatus.QUESTION_ANSWERED)) {
             throw new BusinessLogicException(ExceptionCode.CANNOT_CHANGE_BOARD);
         }
     }
@@ -194,6 +215,25 @@ public class BoardService {
 //               .toList();
 //    }
 
+    //ViewCount 구현 : 조회수 구현 로직
+    public void increaseViewCount(Board board, Authentication authentication) {
+        //검증된 Board를 파라미터로 받고, view의 board, viewCount 값 변경
+        Member member =
+                memberService.findVerifiedMember(authentication.getPrincipal().toString());
 
+        View view = new View();
+        view.setBoard(board);
+        view.setMember(member);
+
+        //DB 저장
+        viewRepository.save(view);
+    }
+
+    //최신글 구현 로직
+    public Board findNewBoard(Board board) {
+        if(board.getCreatedAt().isAfter(LocalDateTime.now().minusDays(2))) {
+            board.isNew() = true;
+        }
+    }
 
 }
