@@ -5,7 +5,8 @@ import com.springboot.board.repository.BoardRepository;
 import com.springboot.comment.repository.CommentRepository;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
-import com.springboot.like.Like;
+import com.springboot.like.entity.Like;
+import com.springboot.like.repository.LikeRepository;
 import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
 import com.springboot.view.View;
@@ -16,23 +17,21 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Transactional
 @Service
 public class BoardService {
     private final BoardRepository boardRepository;
     private final ViewRepository viewRepository;
+    private final LikeRepository likeRepository;
     private final MemberService memberService;
 
 
-    public BoardService(BoardRepository boardRepository, ViewRepository viewRepository, MemberService memberService, CommentRepository commentRepository) {
+    public BoardService(BoardRepository boardRepository, ViewRepository viewRepository, LikeRepository likeRepository, MemberService memberService, CommentRepository commentRepository) {
         this.boardRepository = boardRepository;
         this.viewRepository = viewRepository;
+        this.likeRepository = likeRepository;
         this.memberService = memberService;
     }
 
@@ -230,10 +229,40 @@ public class BoardService {
     }
 
     //최신글 구현 로직
-    public Board findNewBoard(Board board) {
-        if(board.getCreatedAt().isAfter(LocalDateTime.now().minusDays(2))) {
-            board.isNew() = true;
+//    public Board findNewBoard(Board board) {
+//
+//        if(board.getCreatedAt().isAfter(LocalDateTime.now().minusDays(2))) {
+//            board.setIsNew(true);
+//        } else {
+//            board.setIsNew(false);
+//        }
+//        return board;
+//    }
+
+    //Like의 상태를
+    public void setLikeCount(long boardId, Authentication authentication) {
+        Board findBoard = findVerifiedBoard(boardId);
+        Long memberId = memberService.findMemberId(authentication.getPrincipal().toString());
+        //특정 회원이 해당 보드에 좋아요를 했는지 확인
+        Optional<Like> findLike = likeRepository.findByBoardIdAndMemberId(boardId, memberId);
+        Like like =  findLike.orElseThrow(
+                () -> new BusinessLogicException(ExceptionCode.LIKE_NOT_FOUND));
+
+        //데이터베이스에 이미 좋아요가 있으면 취소 해야해!
+        if(findLike.isPresent()) {
+            //이미 저장된 좋아요 삭제
+            likeRepository.delete(like);
+            //board의 likeCount -1 -> 저장
+            findBoard.decreaseLike(like);
+            boardRepository.save(findBoard);
+        } else {
+            //좋아요가 없으면 새로 저장하고
+            likeRepository.save(like);
+            //board의 likeCount +1 -> 저장
+            findBoard.increaseLike(like);
+            boardRepository.save(findBoard);
         }
+
     }
 
 }

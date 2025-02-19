@@ -1,10 +1,9 @@
 package com.springboot.board.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.springboot.audit.Auditable;
 import com.springboot.comment.entity.Comment;
-import com.springboot.like.Like;
+import com.springboot.like.entity.Like;
 import com.springboot.member.entity.Member;
 import com.springboot.view.View;
 import lombok.Getter;
@@ -60,7 +59,11 @@ public class Board extends Auditable {
     private int viewCount;
 
     @Column(nullable = false)
+    private int likeCount;
+
+    @Column(nullable = false)
     private boolean isNew;
+
 
     //영속성 전이
     //member가 가지지고있는 Board(this)가 아니라면, 추가(setBoards)
@@ -71,6 +74,9 @@ public class Board extends Auditable {
         }
     }
 
+    public void setIsNew () {
+
+    }
 
     //Board(질문 글) 상태
     public enum BoardStatus {
@@ -104,6 +110,16 @@ public class Board extends Auditable {
             this.message = message;
         }
     }
+
+    public void increaseLike(Like like) {
+        likeCount ++;
+    }
+
+    public void decreaseLike(Like like) {
+        likeCount --;
+    }
+
+
 
 
 }
